@@ -1,0 +1,31 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.superhh.blogpro.dao.LinkMapper">
+    <insert id="save" parameterType="link">
+        insert  into t_link values (null,#{linkName},#{linkUrl},#{orderNo})
+    </insert>
+    <update id="update" parameterType="link">
+         update t_link set linkName=#{linkName},linkUrl=#{linkUrl},orderNo=#{orderNo}
+         where id=#{id}
+
+    </update>
+    <delete id="delete" parameterType="arraylist">
+        delete from t_link where id in
+        <foreach collection="array" separator="," close=")" open="(" item="id">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="selectAll" resultType="link" parameterType="hashmap">
+        select  *from t_link
+
+
+           order by orderNo
+        <if test="start!=null and size!=null">
+            limit #{start},#{size}
+        </if>
+    </select>
+    <select id="getTotal" resultType="java.lang.Integer">
+        select count(*) from t_link
+    </select>
+</mapper>

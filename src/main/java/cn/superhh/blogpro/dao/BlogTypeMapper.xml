@@ -1,0 +1,48 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.superhh.blogpro.dao.BlogTypeMapper">
+    <resultMap type="cn.superhh.blogpro.pojo.BlogType" id="BlogTypeResult">
+        <id property="id" column="id"/>
+        <result property="typeName" column="typeName"/>
+        <result property="blogCount" column="blogCount"/>
+        <result property="orderNo" column="orderNo"/>
+    </resultMap>
+    <update id="update" parameterType="blogtype" >
+        update t_blogtype set typeName=#{typeName},orderNo=#{orderNo}
+        where id=#{id}
+
+    </update>
+    <select id="selectAll" parameterType="hashmap" resultType="blogtype">
+        select  *from t_blogtype
+        order by orderNo
+        <if test="start!=null and size!=null">
+            limit #{start},#{size}
+        </if>
+
+    </select>
+    <select id="getTotal" resultType="int" >
+        select count(*) from t_blogtype
+    </select>
+    <insert id="save" parameterType="blogtype">
+        insert  into t_blogtype(typeName, orderNo) values(#{typeName},#{orderNo})
+    </insert>
+    <delete id="delete" parameterType="arraylist">
+        delete from t_blogtype where id in
+
+            <foreach collection="array" open="(" close=")" separator="," item="id">
+                 #{id}
+            </foreach>
+
+    </delete>
+    <select id="findById" parameterType="int" resultType="blogtype">
+        select  *from t_blogtype where id=#{id}
+    </select>
+    <select id="countList" resultMap="BlogTypeResult" >
+select  t_blogtype.id, typeName,count(t_blog.id) as blogCount from t_blog
+right join t_blogtype
+on typeId=t_blogtype.id
+group by typeName
+order by orderNo
+    </select>
+</mapper>

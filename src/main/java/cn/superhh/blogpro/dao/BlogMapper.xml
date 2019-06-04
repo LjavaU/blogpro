@@ -1,0 +1,168 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.superhh.blogpro.dao.BlogMapper">
+    <sql id="key">
+<trim suffixOverrides=",">
+        <if test="title!=null and title!=''">
+            title,
+        </if>
+        <if test="summary!=null and summary!=''">
+            summary,
+        </if>
+        <if test="releaseDate!=null ">
+            releaseDate,
+        </if>
+        <if test="clickHit!=null and clickHit!=''">
+            clickHit,
+        </if>
+
+        <if test="replyHit!=null and replyHit!=''">
+            replyHit,
+        </if>
+        <if test="content!=null and content!=''">
+            content,
+        </if>
+        <if test="blogType.id!=null and blogType.id!=''">
+            typeId,
+        </if>
+        <if test="keyWord!=null and keyWord!=''">
+            keyWord,
+        </if>
+</trim>
+
+    </sql>
+    <sql id="value">
+        <trim suffixOverrides=",">
+            <if test="title!=null and title!=''">
+               #{ title},
+            </if>
+            <if test="summary!=null and summary!=''">
+                #{summary},
+            </if>
+            <if test="releaseDate!=null ">
+                #{releaseDate},
+            </if>
+            <if test="clickHit!=null and clickHit!=''">
+                #{clickHit},
+            </if>
+
+            <if test="replyHit!=null and replyHit!=''">
+                #{replyHit},
+            </if>
+            <if test="content!=null and content!=''">
+                #{content},
+            </if>
+            <if test="blogType.id!=null and blogType.id!=''">
+                #{blogType.id},
+            </if>
+            <if test="keyWord!=null and keyWord!=''">
+                #{keyWord},
+            </if>
+        </trim>
+
+    </sql>
+
+    <resultMap id="resultBlog" type="cn.superhh.blogpro.pojo.Blog">
+    <id property="id" column="id"/>
+    <result property="title" column="title"/>
+    <result property="summary" column="summary"/>
+    <result property="releaseDate" column="releaseDate"/>
+    <result property="clickHit" column="clickHit"/>
+    <result property="replyHit" column="replyHit"/>
+    <result property="content" column="content"/>
+    <result property="keyWord" column="keyWord"/>
+    <association property="blogType" column="typeId" javaType="cn.superhh.blogpro.pojo.BlogType"
+                 select="cn.superhh.blogpro.dao.BlogTypeMapper.findById"/>
+ </resultMap>
+    <insert id="save" parameterType="blog">
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert  into t_blog(<include refid="key"/>)
+        values (<include refid="value"/>)
+    </insert>
+<select id="selectAll"  resultMap="resultBlog" parameterType="hashmap">
+    select  *from t_blog
+    <where>
+    <if test="title!=null and title!=''">
+         and title like #{title}
+    </if>
+    <if test="typeId!=null and typeId!=''">
+         and typeId=#{typeId}
+    </if>
+    <if test="releaseDateStr!=null and releaseDateStr!=''">
+        and DATE_FORMAT(releaseDate,'%Y年%m月%d日') = #{releaseDateStr}
+    </if>
+    </where>
+    order by releaseDate desc
+    <if test="start!=null and size!=null">
+        limit #{start},#{size}
+    </if>
+</select>
+    <select id="getTotal" resultType="int" parameterType="map">
+        select count(*) from t_blog
+        <where>
+            <if test="title!=null and title!='' ">
+                and title like #{title}
+            </if>
+            <if test="typeId!=null and typeId!='' ">
+                and typeId = #{typeId}
+            </if>
+            <if test="releaseDateStr!=null and releaseDateStr!='' ">
+                and DATE_FORMAT(releaseDate,'%Y年%m月') = #{releaseDateStr}
+            </if>
+        </where>
+    </select>
+
+    <delete id="delete" parameterType="arraylist">
+        delete from t_blog  where id in
+        <foreach collection="array" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+
+    </delete>
+    <select id="findById" resultMap="resultBlog">
+     select * from t_blog where id=#{id}
+    </select>
+
+    <update id="update" parameterType="blog">
+        update t_blog
+        <set>
+            <if test="title!=null and title!='' ">
+                title=#{title},
+            </if>
+            <if test="summary!=null and summary!='' ">
+                summary=#{summary},
+            </if>
+            <if test="content!=null and content!='' ">
+                content=#{content},
+            </if>
+            <if test="blogType.id!=null ">
+                typeId=#{blogType.id},
+            </if>
+            <if test="clickHit!=null ">
+                clickHit=#{clickHit},
+            </if>
+            <if test="replyHit!=null ">
+                replyHit=#{replyHit},
+            </if>
+            <if test="keyWord!=null and keyWord!='' ">
+                keyWord=#{keyWord},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="countList" resultMap="resultBlog">
+        SELECT DATE_FORMAT(releaseDate,'%Y年%m月%d日') AS releaseDateStr ,COUNT(*) AS blogCount  FROM t_blog GROUP BY DATE_FORMAT(releaseDate,'%Y年%m月%d日') ORDER BY DATE_FORMAT(releaseDate,'%Y年%m月%d日') DESC;
+    </select>
+    <select id="getLast" parameterType="integer" resultMap="resultBlog" >
+        select *from t_blog where id&lt;#{id} order by id desc  limit 1
+    </select>
+    <select id="getNext" parameterType="integer" resultMap="resultBlog">
+        select *from t_blog where id&gt;#{id} order by id asc limit 1
+    </select>
+    <select id="like" parameterType="string" resultType="blog">
+        select  *from t_blog where title like #{title}
+    </select>
+</mapper>
